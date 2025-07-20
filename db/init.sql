@@ -1,4 +1,4 @@
-create database vk;
+-- create database vk;
 
 
 -- Таблица пользователей
