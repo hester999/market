@@ -40,3 +40,8 @@ type ErrResponse404 struct {
 	Message string `json:"message" example:"Not Found"`
 	Code    int    `json:"code" example:"404"`
 }
+
+type ErrResponse403 struct {
+	Message string `json:"message" example:"you are not owner"`
+	Code    int    `json:"code" example:"403"`
+}

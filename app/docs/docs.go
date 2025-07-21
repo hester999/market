@@ -250,6 +250,65 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Удаляет объявление по ID. Только владелец может удалить объявление. Требует авторизации.",
+                "tags": [
+                    "ads"
+                ],
+                "summary": "Удалить объявление",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID объявления",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "ID объявления не передан",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrResponse400"
+                        }
+                    },
+                    "401": {
+                        "description": "Пользователь не авторизован",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrResponse401"
+                        }
+                    },
+                    "403": {
+                        "description": "Нет прав на удаление чужого объявления",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrResponse403"
+                        }
+                    },
+                    "404": {
+                        "description": "Объявление не найдено",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrResponse404"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrResponse500"
+                        }
+                    }
+                }
             }
         },
         "/api/v1/ads/{id}/images": {
@@ -872,6 +931,19 @@ const docTemplate = `{
                 "message": {
                     "type": "string",
                     "example": "unauthorized"
+                }
+            }
+        },
+        "dto.ErrResponse403": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer",
+                    "example": 403
+                },
+                "message": {
+                    "type": "string",
+                    "example": "you are not owner"
                 }
             }
         },

@@ -247,6 +247,15 @@ definitions:
         example: unauthorized
         type: string
     type: object
+  dto.ErrResponse403:
+    properties:
+      code:
+        example: 403
+        type: integer
+      message:
+        example: you are not owner
+        type: string
+    type: object
   dto.ErrResponse404:
     properties:
       code:
@@ -435,6 +444,45 @@ paths:
       tags:
       - ads
   /api/v1/ads/{id}:
+    delete:
+      description: Удаляет объявление по ID. Только владелец может удалить объявление.
+        Требует авторизации.
+      parameters:
+      - description: ID объявления
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: ID объявления не передан
+          schema:
+            $ref: '#/definitions/dto.ErrResponse400'
+        "401":
+          description: Пользователь не авторизован
+          schema:
+            $ref: '#/definitions/dto.ErrResponse401'
+        "403":
+          description: Нет прав на удаление чужого объявления
+          schema:
+            $ref: '#/definitions/dto.ErrResponse403'
+        "404":
+          description: Объявление не найдено
+          schema:
+            $ref: '#/definitions/dto.ErrResponse404'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/dto.ErrResponse500'
+      security:
+      - BearerAuth: []
+      summary: Удалить объявление
+      tags:
+      - ads
     get:
       consumes:
       - application/json

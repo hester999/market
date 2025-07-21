@@ -9,6 +9,19 @@ import (
 	"net/http"
 )
 
+// Delete godoc
+// @Summary      Удалить объявление
+// @Description  Удаляет объявление по ID. Только владелец может удалить объявление. Требует авторизации.
+// @Tags         ads
+// @Security     BearerAuth
+// @Param        id   path      string  true  "ID объявления"
+// @Success      200  {string}  string  "OK"
+// @Failure      400  {object}  dto.ErrResponse400 "ID объявления не передан"
+// @Failure      401  {object}  dto.ErrResponse401  "Пользователь не авторизован"
+// @Failure      403  {object}  dto.ErrResponse403  "Нет прав на удаление чужого объявления"
+// @Failure      404  {object}  dto.ErrResponse404  "Объявление не найдено"
+// @Failure      500  {object}  dto.ErrResponse500  "Внутренняя ошибка сервера"
+// @Router       /api/v1/ads/{id} [delete]
 func (a *AdsHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
