@@ -20,7 +20,7 @@ WORKDIR /app/build
 
 RUN apt update && apt install -y ca-certificates
 
-# Копируем бинарник и статику
+
 COPY --from=builder /app/build/app /app/build/app
 COPY --from=builder /app/docs /app/docs
 COPY --from=builder /app/static /app/static
