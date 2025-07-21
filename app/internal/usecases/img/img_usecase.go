@@ -10,13 +10,6 @@ import (
 	"time"
 )
 
-type Img interface {
-	Create(img entity.AdImage) (entity.AdImage, error)
-	GetImages(adId string) ([]entity.AdImage, error)
-	GetImageById(id string) (entity.AdImage, error)
-	Exists(adId string) (bool, error)
-}
-
 type ImgUsecase struct {
 	repo Img
 }
@@ -71,6 +64,7 @@ func (i *ImgUsecase) saveFile(filename string, data []byte) (string, error) {
 		return "", err
 	}
 	uploadPath := filepath.Join(wd, "..", "static", "upload")
+	//uploadPath := filepath.Join(wd, "static", "upload")
 
 	if err := os.MkdirAll(uploadPath, 0755); err != nil {
 		return "", err

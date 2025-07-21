@@ -16,7 +16,6 @@ func NewRouter(
 	imageHandler *image.ImageHandler,
 	authMiddleware func(http.Handler) http.Handler,
 	authOptionalMiddleware func(http.Handler) http.Handler,
-	imgMiddleware func(http.Handler) http.Handler,
 ) *mux.Router {
 	r := mux.NewRouter()
 	api := r.PathPrefix("/api/v1").Subrouter()
@@ -29,7 +28,7 @@ func NewRouter(
 	// Ads
 	api.Handle("/ads", authMiddleware(http.HandlerFunc(adsHandler.Create))).Methods(http.MethodPost)
 	api.Handle("/ads", authOptionalMiddleware(http.HandlerFunc(adsHandler.GetAllAds))).Methods(http.MethodGet)
-	api.HandleFunc("/ads/{id}", adsHandler.GetAdByID).Methods(http.MethodGet)
+	api.Handle("/ads/{id}", authOptionalMiddleware(http.HandlerFunc(adsHandler.GetAdByID))).Methods(http.MethodGet)
 	api.Handle("/ads/{id}", authMiddleware(http.HandlerFunc(adsHandler.Delete))).Methods(http.MethodDelete)
 
 	// Images

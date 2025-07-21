@@ -1,0 +1,1449 @@
+{
+	"info": {
+		"_postman_id": "5302ef03-1ac6-4ce3-818d-759f3d4a6143",
+		"name": "market Copy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34108934"
+	},
+	"item": [
+		{
+			"name": "reg",
+			"item": [
+				{
+					"name": "Registration Request 201",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"test@example.com\",\r\n  \"password\": \"aaaaAAAA!1\",\r\n  \"name\": \"test\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reg 400",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"test@example.com\",\r\n  \"password\": \"aaaaAAAA!1\",\r\n  \"name\": \"test\r\n}\r\n"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reg 409 (email already exists)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"test@example.com\",\r\n  \"password\": \"aaaaAAAA!1\",\r\n  \"name\": \"test\"\r\n}\r\n"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "login",
+			"item": [
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n\r\n{\r\n  \"email\": \"test@example.com\",\r\n  \"password\": \"aaaaAAAA!1\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login 4010 (invalid json)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "d246788f-d698-4f15-8828-f07336b977f2",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer d246788f-d698-4f15-8828-f07336b977f2",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"test@example.com\",\r\n  \"password\": \"aaaaAAAA!1\",\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login 404 user not foudn",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "d246788f-d698-4f15-8828-f07336b977f2",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer d246788f-d698-4f15-8828-f07336b977f2",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"test1@example.com\",\r\n  \"password\": \"aaaaAAAA!1\"\r\n}\r\n"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ad",
+			"item": [
+				{
+					"name": "get all",
+					"item": [
+						{
+							"name": "getAll 404",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer d246788f-d698-4f15-8828-f07336b977f2",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "limit err (400)",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "limit",
+										"value": "0,5",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "file",
+									"file": {}
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads?limit=-1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "-1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "offset err 400",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads?offset=-1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "-1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "min price err 400",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads?min=-1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									],
+									"query": [
+										{
+											"key": "min",
+											"value": "-1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "max price err 400",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads?max=-1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									],
+									"query": [
+										{
+											"key": "max",
+											"value": "-1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "min greate max err 400",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads?max=5&min=10",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									],
+									"query": [
+										{
+											"key": "max",
+											"value": "5"
+										},
+										{
+											"key": "min",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get all",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "1ddec94d-5149-44d8-a24b-f67531f9532c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get all with limit",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads?limit=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get all offset",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads?offset=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									],
+									"query": [
+										{
+											"key": "offset",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get with min price",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads?min=120",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									],
+									"query": [
+										{
+											"key": "min",
+											"value": "120"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get all with max price",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads?max=80",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									],
+									"query": [
+										{
+											"key": "max",
+											"value": "80"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get all max min price",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "1ddec94d-5149-44d8-a24b-f67531f9532c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads?min=100&max=175",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									],
+									"query": [
+										{
+											"key": "min",
+											"value": "100"
+										},
+										{
+											"key": "max",
+											"value": "175"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get all  with order asc",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "1ddec94d-5149-44d8-a24b-f67531f9532c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads?order=asc",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									],
+									"query": [
+										{
+											"key": "order",
+											"value": "asc"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "sort price",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "1ddec94d-5149-44d8-a24b-f67531f9532c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads?sort=price&order=desc",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									],
+									"query": [
+										{
+											"key": "sort",
+											"value": "price"
+										},
+										{
+											"key": "order",
+											"value": "desc"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "get by id",
+					"item": [
+						{
+							"name": "ad 404",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/199fa0ba-b82f-459a-b79d-4931351f8edb",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"199fa0ba-b82f-459a-b79d-4931351f8edb"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "invalid ad id 400",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/123",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"123"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get by id non token (is_owner\": false)",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46e",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"a3b80e40-1f6b-434a-ace9-89b7da8fb46e"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get by id with token ( \"is_owner\": true)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "1ddec94d-5149-44d8-a24b-f67531f9532c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46e",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"a3b80e40-1f6b-434a-ace9-89b7da8fb46e"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "create",
+					"item": [
+						{
+							"name": "non token creat 401",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer d246788f-d698-4f15-8828-f07336b977f2",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"title\": \"test\",\r\n  \"description\": \"test\",\r\n  \"price\": 50\r\n}   \r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create 201",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "1ddec94d-5149-44d8-a24b-f67531f9532c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"title\": \"test\",\r\n  \"description\": \"test\",\r\n  \"price\": 50\r\n}   \r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "invalid json 400",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "1ddec94d-5149-44d8-a24b-f67531f9532c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"title\": \"test\",\r\n  \"description\": \"test\",\r\n  \"price\": 50,\r\n}   \r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "delet",
+					"item": [
+						{
+							"name": "delete  non token 401",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/1212312312",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"1212312312"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "invalid uuid",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "1ddec94d-5149-44d8-a24b-f67531f9532c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/1212312312",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"1212312312"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "404 ad not found",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "1ddec94d-5149-44d8-a24b-f67531f9532c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/9947ca27-3126-4df6-ab7b-65cf159b0a27",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"9947ca27-3126-4df6-ab7b-65cf159b0a27"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "non owner err",
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
+						},
+						{
+							"name": "del 200",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "1ddec94d-5149-44d8-a24b-f67531f9532c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/c7ce3549-4ff6-4fd6-9a1f-f938637595f5",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"c7ce3549-4ff6-4fd6-9a1f-f938637595f5"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "img",
+			"item": [
+				{
+					"name": "create",
+					"item": [
+						{
+							"name": "create img 401",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "multipart/form-data",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "image",
+											"type": "file",
+											"src": "/C:/Users/ivank/OneDrive/Pictures/Saved Pictures/roofline-girl-1s-2560x1080.jpg"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/199fa0ba-b82f-459a-b79d-4931351f8edb/images",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"199fa0ba-b82f-459a-b79d-4931351f8edb",
+										"images"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "creat img (ivalid ad id) 400",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "1ddec94d-5149-44d8-a24b-f67531f9532c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/123/images",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"123",
+										"images"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create 400 empty from-data",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "1ddec94d-5149-44d8-a24b-f67531f9532c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "image",
+											"type": "file",
+											"src": "/C:/Users/ivank/OneDrive/Pictures/Saved Pictures/roofline-girl-1s-2560x1080.jpg",
+											"disabled": true
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/199fa0ba-b82f-459a-b79d-4931351f8edb/images",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"199fa0ba-b82f-459a-b79d-4931351f8edb",
+										"images"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create err ad not found 404",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "1ddec94d-5149-44d8-a24b-f67531f9532c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "image",
+											"type": "file",
+											"src": "/C:/Users/ivank/OneDrive/Pictures/Saved Pictures/roofline-girl-1s-2560x1080.jpg"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/199fa0ba-b82f-459a-b79d-4931351f8edb/images",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"199fa0ba-b82f-459a-b79d-4931351f8edb",
+										"images"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "invalid type file 415",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "1ddec94d-5149-44d8-a24b-f67531f9532c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "image",
+											"type": "file",
+											"src": "/C:/Users/ivank/OneDrive/Desktop/Новый текстовый документ.pdf"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46e/images",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"a3b80e40-1f6b-434a-ace9-89b7da8fb46e",
+										"images"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create 201",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "1ddec94d-5149-44d8-a24b-f67531f9532c",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "image",
+											"type": "file",
+											"src": "/C:/Users/ivank/OneDrive/Pictures/Saved Pictures/roofline-girl-1s-2560x1080.jpg"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46e/images",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"a3b80e40-1f6b-434a-ace9-89b7da8fb46e",
+										"images"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "get image by id",
+					"item": [
+						{
+							"name": "get 200",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/images/98bd0b32-6327-4d73-a906-f44b9016da8a",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"images",
+										"98bd0b32-6327-4d73-a906-f44b9016da8a"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get  404",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/images/9947ca27-3126-4df6-ab7b-65cf159b0a27",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"images",
+										"9947ca27-3126-4df6-ab7b-65cf159b0a27"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "invalid id 400",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/images/9947ca27-3126-4df6-ab7b-65cf159b0a",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"images",
+										"9947ca27-3126-4df6-ab7b-65cf159b0a"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "get images",
+					"item": [
+						{
+							"name": "get 200",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46e/images",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"a3b80e40-1f6b-434a-ace9-89b7da8fb46e",
+										"images"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "invalid uuid",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46z/images",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"a3b80e40-1f6b-434a-ace9-89b7da8fb46z",
+										"images"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "ad mot found",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/v1/ads/9947ca27-3126-4df6-ab7b-65cf159b0a27/images",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"9947ca27-3126-4df6-ab7b-65cf159b0a27",
+										"images"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}

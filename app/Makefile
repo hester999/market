@@ -1,15 +1,17 @@
 APP_NAME=app
+OUTPUT_PATH=build
 
 .PHONY: build run clean swag
 
 build:
-	go build -o ./cmd/$(APP_NAME) ./cmd/main.go
+	mkdir -p $(OUTPUT_PATH)
+	go build -o $(OUTPUT_PATH)/$(APP_NAME) ./cmd/main.go
 
 run: build
-	./cmd/$(APP_NAME)
+	./$(OUTPUT_PATH)/$(APP_NAME)
 
 clean:
-	rm -rf ./cmd/$(APP_NAME)
+	rm -rf $(OUTPUT_PATH)
 
 swag:
 	swag init --generalInfo cmd/main.go --parseInternal --output ./docs

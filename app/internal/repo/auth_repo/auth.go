@@ -1,4 +1,4 @@
-package repo
+package auth_repo
 
 import (
 	"database/sql"

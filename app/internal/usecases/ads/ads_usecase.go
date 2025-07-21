@@ -3,22 +3,14 @@ package ads
 import (
 	"fmt"
 	"market/app/internal/apperr"
-	entity2 "market/app/internal/entity"
+	"market/app/internal/entity"
 	"market/app/internal/usecases/ads/dto"
 	"market/app/internal/utils"
 	"time"
 )
 
-type AdsRepo interface {
-	Create(ad entity2.Ad) (entity2.Ad, error)
-	GetAll(limit, offset int, sortBy, order string, priceMin, priceMax float64) ([]entity2.Ad, error)
-	GetById(adId string) (entity2.Ad, error)
-	Delete(userId, adId string) error
-	GetAuthorName(userId string) (string, error)
-}
-
 type ImgRepo interface {
-	GetImages(adId string) ([]entity2.AdImage, error)
+	GetImages(adId string) ([]entity.AdImage, error)
 }
 type Ads struct {
 	repo AdsRepo
@@ -29,11 +21,11 @@ func NewAds(repo AdsRepo, img ImgRepo) *Ads {
 	return &Ads{repo, img}
 }
 
-func (a *Ads) Create(ad entity2.Ad) (entity2.Ad, error) {
+func (a *Ads) Create(ad entity.Ad) (entity.Ad, error) {
 
 	id, err := utils.GenerateUUID()
 	if err != nil {
-		return entity2.Ad{}, fmt.Errorf("uuid generation error: %w", err)
+		return entity.Ad{}, fmt.Errorf("uuid generation error: %w", err)
 	}
 
 	ad.Id = id
@@ -42,7 +34,7 @@ func (a *Ads) Create(ad entity2.Ad) (entity2.Ad, error) {
 	savedAd, err := a.repo.Create(ad)
 
 	if err != nil {
-		return entity2.Ad{}, fmt.Errorf("ads creation failed: %w", err)
+		return entity.Ad{}, fmt.Errorf("ads creation failed: %w", err)
 	}
 
 	return savedAd, nil
@@ -82,7 +74,7 @@ func (a *Ads) Delete(adId, userId string) error {
 		return apperr.ErrForbidden
 	}
 
-	if err := a.repo.Delete(adId, userId); err != nil {
+	if err := a.repo.Delete(userId, adId); err != nil {
 		return fmt.Errorf("delete ad failed: %w", err)
 	}
 
@@ -110,7 +102,7 @@ func (a *Ads) GetAll(userId string, limit, offset int, sortBy, order string, pri
 			return nil, fmt.Errorf("get images failed: %w", err)
 		}
 
-		var imageURLs []string
+		imageURLs := make([]string, 0, len(images))
 		for _, img := range images {
 			imageURLs = append(imageURLs, img.ImageURL)
 		}

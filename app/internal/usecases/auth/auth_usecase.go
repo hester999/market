@@ -5,22 +5,12 @@ import (
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"market/app/internal/apperr"
-	entity2 "market/app/internal/entity"
+	"market/app/internal/entity"
 	"market/app/internal/utils"
 	"net/mail"
 	"strings"
 	"time"
 )
-
-type Auth interface {
-	GetUserByEmail(email string) (entity2.User, error)
-	CreateSession(session entity2.Session) (entity2.Session, error)
-	UpdateTokenSession(session entity2.Session) (entity2.Session, error)
-	CheckUserExists(userId string) (bool, error)
-	FindSession(token string) (entity2.Session, error)
-	DeleteSession(token string) error
-	GetSessionByUserId(id string) (entity2.Session, error)
-}
 
 type AuthUsecase struct {
 	repo Auth
@@ -58,7 +48,7 @@ func (a *AuthUsecase) Login(email, password string) (string, error) {
 	}
 
 	if !exists {
-		session := entity2.Session{
+		session := entity.Session{
 			Token:     token,
 			UserId:    user.Id,
 			CreatedAt: time.Now().UTC(),

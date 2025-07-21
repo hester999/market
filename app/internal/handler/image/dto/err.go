@@ -36,3 +36,8 @@ type Err500Internal struct {
 	Message string `json:"message" example:"internal server error"`
 	Code    int    `json:"code" example:"500"`
 }
+
+type Err415 struct {
+	Message string `json:"message" example:"unsupported content type"`
+	Code    int    `json:"code" example:"415"`
+}

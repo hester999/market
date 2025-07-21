@@ -12,11 +12,6 @@ import (
 	"unicode"
 )
 
-type Registry interface {
-	Registration(user entity.User) (entity.User, error)
-	EmailExists(email string) (bool, error)
-}
-
 type RegistryUsecase struct {
 	repo Registry
 }

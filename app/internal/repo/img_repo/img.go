@@ -1,4 +1,4 @@
-package repo
+package img_repo
 
 import (
 	"database/sql"

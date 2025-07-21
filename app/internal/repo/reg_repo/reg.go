@@ -1,4 +1,4 @@
-package repo
+package reg_repo
 
 import (
 	"github.com/jmoiron/sqlx"

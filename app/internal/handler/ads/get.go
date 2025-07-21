@@ -3,9 +3,11 @@ package ads
 import (
 	"encoding/json"
 	"errors"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
+	"log"
 	"market/app/internal/apperr"
-	dto2 "market/app/internal/handler/ads/dto"
+	"market/app/internal/handler/ads/dto"
 	"market/app/internal/handler/ads/mapper"
 	"net/http"
 	"strconv"
@@ -44,9 +46,11 @@ func (a *AdsHandler) GetAllAds(w http.ResponseWriter, r *http.Request) {
 	minPrice, _ := strconv.ParseFloat(r.URL.Query().Get("min"), 64)
 	maxPrice, _ := strconv.ParseFloat(r.URL.Query().Get("max"), 64)
 
-	if err := a.validateQueryParams(limit, offset, minPrice, maxPrice); err != nil {
+	err := a.validateQueryParams(limit, offset, minPrice, maxPrice)
+	if err != nil {
+
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(dto2.ErrResponse{
+		json.NewEncoder(w).Encode(dto.ErrResponse{
 			Message: err.Error(),
 			Code:    http.StatusBadRequest,
 		})
@@ -55,17 +59,18 @@ func (a *AdsHandler) GetAllAds(w http.ResponseWriter, r *http.Request) {
 
 	res, err := a.ads.GetAll(userID, limit, offset, sort, order, minPrice, maxPrice)
 	if err != nil {
+		log.Println(err)
 		if errors.Is(err, apperr.ErrAdsNotFound) {
 			w.WriteHeader(http.StatusNotFound)
-			json.NewEncoder(w).Encode(dto2.ErrResponseNotFound{
+			json.NewEncoder(w).Encode(dto.ErrResponseNotFound{
 				Code:    http.StatusNotFound,
 				Message: "ads not found",
-				Data:    make([]dto2.AdResponseDTO, 0),
+				Data:    make([]dto.AdResponseDTO, 0),
 			})
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(dto2.ErrResponse{
+		json.NewEncoder(w).Encode(dto.ErrResponse{
 			Code:    http.StatusInternalServerError,
 			Message: "internal server error",
 		})
@@ -78,21 +83,19 @@ func (a *AdsHandler) GetAllAds(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *AdsHandler) validateQueryParams(limit, offset int, priceMin, priceMax float64) error {
-	// если явно задан limit, он должен быть > 0
+
 	if limit < 0 {
 		return apperr.ErrInvalidLimit
 	}
-	// offset может быть 0, но не меньше
+
 	if offset < 0 {
 		return apperr.ErrInvalidOffset
 	}
 
-	// если оба заданы — проверяем корректность диапазона
 	if priceMin > 0 && priceMax > 0 && priceMax < priceMin {
 		return apperr.ErrInvalidPrice
 	}
 
-	// если только один задан — валидировать только его
 	if priceMin < 0 || priceMax < 0 {
 		return apperr.ErrInvalidPrice
 	}
@@ -122,9 +125,17 @@ func (a *AdsHandler) GetAdByID(w http.ResponseWriter, r *http.Request) {
 
 	if adId == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(dto2.ErrResponse{
+		json.NewEncoder(w).Encode(dto.ErrResponse{
 			Code:    http.StatusBadRequest,
 			Message: "id is empty",
+		})
+		return
+	}
+	if err := uuid.Validate(adId); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.ErrResponse{
+			Code:    http.StatusBadRequest,
+			Message: "id is invalid",
 		})
 		return
 	}
@@ -133,7 +144,7 @@ func (a *AdsHandler) GetAdByID(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, apperr.ErrAdsNotFound) {
 			w.WriteHeader(http.StatusNotFound)
-			json.NewEncoder(w).Encode(dto2.ErrResponseNotFound{
+			json.NewEncoder(w).Encode(dto.ErrResponseNotFound{
 				Code:    http.StatusNotFound,
 				Message: "ads not found",
 			})
@@ -141,7 +152,7 @@ func (a *AdsHandler) GetAdByID(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(dto2.ErrResponse{
+		json.NewEncoder(w).Encode(dto.ErrResponse{
 			Code:    http.StatusInternalServerError,
 			Message: "internal server error",
 		})

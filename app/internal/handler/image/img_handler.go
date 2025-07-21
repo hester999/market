@@ -3,21 +3,15 @@ package image
 import (
 	"encoding/json"
 	"errors"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"io"
 	"market/app/internal/apperr"
-	"market/app/internal/entity"
-	dto2 "market/app/internal/handler/image/dto"
+	"market/app/internal/handler/image/dto"
 	"market/app/internal/handler/image/mapper"
 	"mime/multipart"
 	"net/http"
 )
-
-type Img interface {
-	AddImage(adId string, data []byte, ext string) (entity.AdImage, error)
-	GetImages(adId string) ([]entity.AdImage, error)
-	GetImageById(id string) (entity.AdImage, error)
-}
 
 type ImageHandler struct {
 	img Img
@@ -40,7 +34,7 @@ func NewImageHandler(img Img) *ImageHandler {
 // @Failure      400    {object}  dto.Err400BadRequest          "Невалидный файл или данные"
 // @Failure      401    {object}  dto.Err401Unauthorized        "Пользователь не авторизован"
 // @Failure      404    {object}  dto.Err404AdNotFound          "Объявление не найдено"
-// @Failure      415    {string}  string                        "Неподдерживаемый тип файла"
+// @Failure      415    {object}  dto.Err415                        "Неподдерживаемый тип файла"
 // @Failure      500    {object}  dto.Err500Internal            "Внутренняя ошибка сервера"
 // @Router       /api/v1/ads/{id}/images [post]
 func (i *ImageHandler) AddImage(w http.ResponseWriter, r *http.Request) {
@@ -48,12 +42,21 @@ func (i *ImageHandler) AddImage(w http.ResponseWriter, r *http.Request) {
 
 	adID := mux.Vars(r)["id"]
 
+	if err := uuid.Validate(adID); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.ErrResponse{
+			Message: "invalid ad id",
+			Code:    http.StatusBadRequest,
+		})
+		return
+	}
+
 	if err := r.ParseMultipartForm(10 << 20); err != nil {
 
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(dto2.ErrResponse{
-			Code:    http.StatusInternalServerError,
-			Message: "internal server error",
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.ErrResponse{
+			Code:    http.StatusBadRequest,
+			Message: "invalid request body",
 		})
 		return
 	}
@@ -62,7 +65,7 @@ func (i *ImageHandler) AddImage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(dto2.ErrResponse{
+		json.NewEncoder(w).Encode(dto.ErrResponse{
 			Code:    http.StatusInternalServerError,
 			Message: "image upload error",
 		})
@@ -73,18 +76,27 @@ func (i *ImageHandler) AddImage(w http.ResponseWriter, r *http.Request) {
 	ext, err := validateType(file)
 
 	if err != nil {
+
 		if errors.Is(err, apperr.ErrUnsupportedFileType) {
-			http.Error(w, "unsupported file type", http.StatusUnsupportedMediaType)
+			w.WriteHeader(http.StatusUnsupportedMediaType)
+			json.NewEncoder(w).Encode(dto.ErrResponse{
+				Message: "unsupported file type",
+				Code:    http.StatusUnsupportedMediaType,
+			})
 			return
 		}
-		http.Error(w, "failed to validate file", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.ErrResponse{
+			Message: "bad request",
+			Code:    http.StatusBadRequest,
+		})
 		return
 	}
 
 	imgBytes, err := io.ReadAll(file)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(dto2.ErrResponse{
+		json.NewEncoder(w).Encode(dto.ErrResponse{
 			Code:    http.StatusInternalServerError,
 			Message: "internal server error",
 		})
@@ -94,14 +106,14 @@ func (i *ImageHandler) AddImage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, apperr.ErrAddNotFound) {
 			w.WriteHeader(http.StatusNotFound)
-			json.NewEncoder(w).Encode(dto2.ErrResponse{
+			json.NewEncoder(w).Encode(dto.ErrResponse{
 				Code:    http.StatusNotFound,
 				Message: "ad not found",
 			})
 			return
 		}
 
-		json.NewEncoder(w).Encode(dto2.ErrResponse{
+		json.NewEncoder(w).Encode(dto.ErrResponse{
 			Code:    http.StatusInternalServerError,
 			Message: "internal server error",
 		})
@@ -130,9 +142,19 @@ func (i *ImageHandler) GetImages(w http.ResponseWriter, r *http.Request) {
 
 	if adID == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(dto2.ErrResponse{
+		json.NewEncoder(w).Encode(dto.ErrResponse{
 			Code:    http.StatusBadRequest,
 			Message: "ad id is required",
+		})
+		return
+	}
+
+	if err := uuid.Validate(adID); err != nil {
+
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.ErrResponse{
+			Message: "invalid ad id",
+			Code:    http.StatusBadRequest,
 		})
 		return
 	}
@@ -141,7 +163,7 @@ func (i *ImageHandler) GetImages(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, apperr.ErrAddNotFound) {
 			w.WriteHeader(http.StatusNotFound)
-			json.NewEncoder(w).Encode(dto2.ErrResponse{
+			json.NewEncoder(w).Encode(dto.ErrResponse{
 				Code:    http.StatusNotFound,
 				Message: "ad not found",
 			})
@@ -149,15 +171,15 @@ func (i *ImageHandler) GetImages(w http.ResponseWriter, r *http.Request) {
 		}
 		if errors.Is(err, apperr.ErrImgNotFound) {
 			w.WriteHeader(http.StatusNotFound)
-			json.NewEncoder(w).Encode(dto2.ErrImagesNotFound{
+			json.NewEncoder(w).Encode(dto.ErrImagesNotFound{
 				Code:    http.StatusNotFound,
 				Message: "image not found",
-				Data:    make([]dto2.ResponseDTO, 0),
+				Data:    make([]dto.ResponseDTO, 0),
 			})
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(dto2.ErrResponse{
+		json.NewEncoder(w).Encode(dto.ErrResponse{
 			Code:    http.StatusInternalServerError,
 			Message: "internal server error",
 		})
@@ -187,24 +209,34 @@ func (i *ImageHandler) GetImageById(w http.ResponseWriter, r *http.Request) {
 
 	if id == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(dto2.ErrResponse{
+		json.NewEncoder(w).Encode(dto.ErrResponse{
 			Code:    http.StatusBadRequest,
 			Message: "image id required",
 		})
 		return
 	}
+
+	if err := uuid.Validate(id); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(dto.ErrResponse{
+			Message: "invalid image id",
+			Code:    http.StatusBadRequest,
+		})
+		return
+	}
+
 	res, err := i.img.GetImageById(id)
 	if err != nil {
 		if errors.Is(err, apperr.ErrImgNotFound) {
 			w.WriteHeader(http.StatusNotFound)
-			json.NewEncoder(w).Encode(dto2.ErrResponse{
+			json.NewEncoder(w).Encode(dto.ErrResponse{
 				Code:    http.StatusNotFound,
 				Message: "image not found",
 			})
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(dto2.ErrResponse{
+		json.NewEncoder(w).Encode(dto.ErrResponse{
 			Code:    http.StatusInternalServerError,
 			Message: "internal server error",
 		})

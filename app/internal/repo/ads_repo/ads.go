@@ -1,9 +1,9 @@
-package repo
+package ads_repo
 
 import (
 	"database/sql"
 	"errors"
-	"fmt"
+	"github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	"market/app/internal/apperr"
 	"market/app/internal/entity"
@@ -58,6 +58,10 @@ func (r *AdsRepository) Create(ad entity.Ad) (entity.Ad, error) {
 
 // GetAll — получение всех объявлений с фильтрацией, сортировкой и пагинацией
 func (r *AdsRepository) GetAll(limit, offset int, sortBy, order string, priceMin, priceMax float64) ([]entity.Ad, error) {
+	if limit == 0 {
+		limit = 10
+	}
+
 	allowedSortFields := map[string]bool{"created_at": true, "price": true}
 	allowedOrder := map[string]bool{"asc": true, "desc": true}
 
@@ -68,39 +72,41 @@ func (r *AdsRepository) GetAll(limit, offset int, sortBy, order string, priceMin
 		order = "desc"
 	}
 
-	if limit == 0 {
-		limit = 10
+	psql := squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
+
+	query := psql.
+		Select("id", "title", "description", "price", "created_at", "author_id").
+		From("ads").
+		Limit(uint64(limit)).
+		Offset(uint64(offset)).
+		OrderBy(sortBy + " " + order)
+
+	if priceMin > 0 && priceMax > 0 {
+		query = query.Where(squirrel.And{
+			squirrel.GtOrEq{"price": priceMin},
+			squirrel.LtOrEq{"price": priceMax},
+		})
+	} else if priceMin > 0 {
+		query = query.Where(squirrel.GtOrEq{"price": priceMin})
+	} else if priceMax > 0 {
+		query = query.Where(squirrel.LtOrEq{"price": priceMax})
 	}
 
-	query := `
-		SELECT id, title, description, price, created_at, author_id
-		FROM ads
-		
-	`
-	args := []interface{}{}
-	argIndex := 1
-
-	if priceMin > 0 || priceMax > 0 {
-		query += fmt.Sprintf(" AND price BETWEEN $%d AND $%d", argIndex, argIndex+1)
-		args = append(args, priceMin, priceMax)
-		argIndex += 2
+	sqlQuery, args, err := query.ToSql()
+	if err != nil {
+		return nil, err
 	}
-
-	query += fmt.Sprintf(" ORDER BY %s %s", sortBy, order)
-	query += fmt.Sprintf(" LIMIT $%d OFFSET $%d", argIndex, argIndex+1)
-	args = append(args, limit, offset)
 
 	var tmp []AdDTO
-	err := r.db.Select(&tmp, query, args...)
+	err = r.db.Select(&tmp, sqlQuery, args...)
 	if err != nil {
-
 		return nil, err
 	}
 	if len(tmp) == 0 {
 		return nil, apperr.ErrAdsNotFound
 	}
 
-	var ads []entity.Ad
+	ads := make([]entity.Ad, 0, len(tmp))
 	for _, v := range tmp {
 		ads = append(ads, entity.Ad{
 			Id:          v.Id,
@@ -113,7 +119,6 @@ func (r *AdsRepository) GetAll(limit, offset int, sortBy, order string, priceMin
 	}
 	return ads, nil
 }
-
 func (r *AdsRepository) GetById(adId string) (entity.Ad, error) {
 	query := `
 		SELECT id, title, description, price, created_at, author_id
@@ -143,6 +148,7 @@ func (r *AdsRepository) GetById(adId string) (entity.Ad, error) {
 // Delete — удаляет объявление, если принадлежит userId
 func (r *AdsRepository) Delete(userId, adId string) error {
 	query := `DELETE FROM ads WHERE id = $1 AND author_id = $2`
+
 	result, err := r.db.Exec(query, adId, userId)
 	if err != nil {
 		return err
@@ -156,19 +162,6 @@ func (r *AdsRepository) Delete(userId, adId string) error {
 	}
 	return nil
 }
-
-//// GetImages — получить изображения объявления
-//func (r *AdsRepository) GetImages(adId string) ([]entity.AdImage, error) {
-//	query := `
-//		SELECT id, ad_id, image_url, created_at
-//		FROM ad_images
-//		WHERE ad_id = $1
-//		ORDER BY created_at;
-//	`
-//	var images []entity.AdImage
-//	err := r.db.Select(&images, query, adId)
-//	return images, err
-//}
 
 // GetAuthorName — получить имя автора по userId
 func (r *AdsRepository) GetAuthorName(userId string) (string, error) {

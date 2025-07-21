@@ -8,8 +8,10 @@ import (
 	"market/app/internal/handler/image"
 	"market/app/internal/handler/reg"
 	authmiddle "market/app/internal/middleware/auth"
-	"market/app/internal/middleware/img"
-	repo2 "market/app/internal/repo"
+	"market/app/internal/repo/ads_repo"
+	"market/app/internal/repo/auth_repo"
+	"market/app/internal/repo/img_repo"
+	"market/app/internal/repo/reg_repo"
 	"market/app/internal/router"
 	adus "market/app/internal/usecases/ads"
 	authus "market/app/internal/usecases/auth"
@@ -43,10 +45,10 @@ func main() {
 		panic(err)
 	}
 
-	adsRepo := repo2.NewAdsRepository(database)
-	authRepo := repo2.NewAuthRepo(database)
-	imgRepo := repo2.NewImgRepo(database)
-	regRepo := repo2.NewRegistry(database)
+	adsRepo := ads_repo.NewAdsRepository(database)
+	authRepo := auth_repo.NewAuthRepo(database)
+	imgRepo := img_repo.NewImgRepo(database)
+	regRepo := reg_repo.NewRegistry(database)
 
 	imgUsecase := imgus.NewImgUsecase(imgRepo)
 	authUsecase := authus.NewAuth(authRepo)
@@ -60,7 +62,6 @@ func main() {
 
 	authMiddleware := authmiddle.AuthMiddleware(authUsecase)
 	authOptionalMiddleware := authmiddle.OptionalAuth(authUsecase)
-	imgMiddleware := img.MiddlewareImg
 
 	r := mux.NewRouter()
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler) // Swagger UI
@@ -72,7 +73,6 @@ func main() {
 		imgHandler,
 		authMiddleware,
 		authOptionalMiddleware,
-		imgMiddleware,
 	)
 
 	r.PathPrefix("/").Handler(app)

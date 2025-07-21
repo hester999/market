@@ -4,15 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"market/app/internal/apperr"
-	"market/app/internal/entity"
-	dto2 "market/app/internal/handler/reg/dto"
+	"market/app/internal/handler/reg/dto"
 	"market/app/internal/handler/reg/mapper"
 	"net/http"
 )
-
-type Registry interface {
-	Registration(user entity.User) (entity.User, error)
-}
 
 type RegistryHandler struct {
 	reg Registry
@@ -38,19 +33,19 @@ func (reg *RegistryHandler) RegistrationHandler(w http.ResponseWriter, r *http.R
 
 	w.Header().Set("Content-Type", "application/json")
 
-	var newUser dto2.RegUserRequestDTO
+	var newUser dto.RegUserRequestDTO
 
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(dto2.ErrDTO{Message: "invalid json",
+		json.NewEncoder(w).Encode(dto.ErrDTO{Message: "invalid json",
 			Code: http.StatusBadRequest})
 		return
 	}
 	err = reg.validateRequest(newUser)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(dto2.ErrDTO{Message: err.Error(), Code: http.StatusBadRequest})
+		json.NewEncoder(w).Encode(dto.ErrDTO{Message: err.Error(), Code: http.StatusBadRequest})
 		return
 	}
 	entityUser := mapper.RegRequestDTOToEntity(newUser)
@@ -61,16 +56,16 @@ func (reg *RegistryHandler) RegistrationHandler(w http.ResponseWriter, r *http.R
 		msgErr, ok := reg.badRequestErr(err)
 		if ok {
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(dto2.ErrDTO{Message: msgErr.Error(), Code: http.StatusBadRequest})
+			json.NewEncoder(w).Encode(dto.ErrDTO{Message: msgErr.Error(), Code: http.StatusBadRequest})
 			return
 		}
 		if errors.Is(err, apperr.ErrEmailAlreadyExists) {
 			w.WriteHeader(http.StatusConflict)
-			json.NewEncoder(w).Encode(dto2.ErrDTO{Message: err.Error(), Code: http.StatusConflict})
+			json.NewEncoder(w).Encode(dto.ErrDTO{Message: err.Error(), Code: http.StatusConflict})
 			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(dto2.ErrDTO{Message: "internal server error", Code: http.StatusInternalServerError})
+		json.NewEncoder(w).Encode(dto.ErrDTO{Message: "internal server error", Code: http.StatusInternalServerError})
 		return
 	}
 
@@ -81,7 +76,7 @@ func (reg *RegistryHandler) RegistrationHandler(w http.ResponseWriter, r *http.R
 
 }
 
-func (reg *RegistryHandler) validateRequest(user dto2.RegUserRequestDTO) error {
+func (reg *RegistryHandler) validateRequest(user dto.RegUserRequestDTO) error {
 
 	if user.Email == "" && user.Password == "" && user.Name == "" {
 		return errors.New("email,name and password are required")

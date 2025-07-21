@@ -2,6 +2,8 @@ package apperr
 
 import "errors"
 
+var ErrInvalidUUID = errors.New("uuid validation failed")
+
 // ads err repo
 var ErrAdsNotFound = errors.New("ads not found")
 
