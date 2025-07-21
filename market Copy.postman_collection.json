@@ -24,12 +24,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/v1/register",
-							"protocol": "http",
+							"raw": "{{baseurl}}/api/v1/register",
 							"host": [
-								"localhost"
+								"{{baseurl}}"
 							],
-							"port": "8080",
 							"path": [
 								"api",
 								"v1",
@@ -49,12 +47,10 @@
 							"raw": "{\r\n  \"email\": \"test@example.com\",\r\n  \"password\": \"aaaaAAAA!1\",\r\n  \"name\": \"test\r\n}\r\n"
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/v1/register",
-							"protocol": "http",
+							"raw": "{{baseurl}}/api/v1/register",
 							"host": [
-								"localhost"
+								"{{baseurl}}"
 							],
-							"port": "8080",
 							"path": [
 								"api",
 								"v1",
@@ -74,12 +70,10 @@
 							"raw": "{\r\n  \"email\": \"test@example.com\",\r\n  \"password\": \"aaaaAAAA!1\",\r\n  \"name\": \"test\"\r\n}\r\n"
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/v1/register",
-							"protocol": "http",
+							"raw": "{{baseurl}}/api/v1/register",
 							"host": [
-								"localhost"
+								"{{baseurl}}"
 							],
-							"port": "8080",
 							"path": [
 								"api",
 								"v1",
@@ -109,12 +103,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/v1/login",
-							"protocol": "http",
+							"raw": "{{baseurl}}/api/v1/login",
 							"host": [
-								"localhost"
+								"{{baseurl}}"
 							],
-							"port": "8080",
 							"path": [
 								"api",
 								"v1",
@@ -155,12 +147,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/v1/login",
-							"protocol": "http",
+							"raw": "{{baseurl}}/api/v1/login",
 							"host": [
-								"localhost"
+								"{{baseurl}}"
 							],
-							"port": "8080",
 							"path": [
 								"api",
 								"v1",
@@ -196,12 +186,10 @@
 							"raw": "{\r\n  \"email\": \"test1@example.com\",\r\n  \"password\": \"aaaaAAAA!1\"\r\n}\r\n"
 						},
 						"url": {
-							"raw": "http://localhost:8080/api/v1/login",
-							"protocol": "http",
+							"raw": "{{baseurl}}/api/v1/login",
 							"host": [
-								"localhost"
+								"{{baseurl}}"
 							],
-							"port": "8080",
 							"path": [
 								"api",
 								"v1",
@@ -235,12 +223,10 @@
 									}
 								],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -273,12 +259,10 @@
 									"file": {}
 								},
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads?limit=-1",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads?limit=-1",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -300,12 +284,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads?offset=-1",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads?offset=-1",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -327,12 +309,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads?min=-1",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads?min=-1",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -354,12 +334,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads?max=-1",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads?max=-1",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -381,12 +359,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads?max=5&min=10",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads?max=5&min=10",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -422,12 +398,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -443,12 +417,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads?limit=1",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads?limit=1",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -470,12 +442,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads?offset=1",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads?offset=1",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -497,12 +467,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads?min=120",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads?min=120",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -524,12 +492,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads?max=80",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads?max=80",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -561,12 +527,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads?min=100&max=175",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads?min=100&max=175",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -602,12 +566,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads?order=asc",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads?order=asc",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -639,12 +601,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads?sort=price&order=desc",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads?sort=price&order=desc",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -675,12 +635,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/199fa0ba-b82f-459a-b79d-4931351f8edb",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/199fa0ba-b82f-459a-b79d-4931351f8edb",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -697,12 +655,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/123",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/123",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -722,12 +678,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46e",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46e",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -754,12 +708,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46e",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46e",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -800,12 +752,10 @@
 									}
 								},
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -840,12 +790,10 @@
 									}
 								},
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -880,12 +828,10 @@
 									}
 								},
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -909,12 +855,10 @@
 								"method": "DELETE",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/1212312312",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/1212312312",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -941,12 +885,10 @@
 								"method": "DELETE",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/1212312312",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/1212312312",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -973,12 +915,10 @@
 								"method": "DELETE",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/9947ca27-3126-4df6-ab7b-65cf159b0a27",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/9947ca27-3126-4df6-ab7b-65cf159b0a27",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -992,8 +932,26 @@
 						{
 							"name": "non owner err",
 							"request": {
-								"method": "GET",
-								"header": []
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": " Bearer af25b555-5d9b-4d65-a6a0-7b35b9f49ce9",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseurl}}/api/v1/ads/c7ce3549-4ff6-4fd6-9a1f-f938637595f5",
+									"host": [
+										"{{baseurl}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"ads",
+										"c7ce3549-4ff6-4fd6-9a1f-f938637595f5"
+									]
+								}
 							},
 							"response": []
 						},
@@ -1013,12 +971,10 @@
 								"method": "DELETE",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/c7ce3549-4ff6-4fd6-9a1f-f938637595f5",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/c7ce3549-4ff6-4fd6-9a1f-f938637595f5",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -1064,12 +1020,10 @@
 									]
 								},
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/199fa0ba-b82f-459a-b79d-4931351f8edb/images",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/199fa0ba-b82f-459a-b79d-4931351f8edb/images",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -1097,12 +1051,10 @@
 								"method": "POST",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/123/images",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/123/images",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -1141,12 +1093,10 @@
 									]
 								},
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/199fa0ba-b82f-459a-b79d-4931351f8edb/images",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/199fa0ba-b82f-459a-b79d-4931351f8edb/images",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -1184,12 +1134,10 @@
 									]
 								},
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/199fa0ba-b82f-459a-b79d-4931351f8edb/images",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/199fa0ba-b82f-459a-b79d-4931351f8edb/images",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -1227,12 +1175,10 @@
 									]
 								},
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46e/images",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46e/images",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -1270,12 +1216,10 @@
 									]
 								},
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46e/images",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46e/images",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -1301,12 +1245,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/images/98bd0b32-6327-4d73-a906-f44b9016da8a",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/images/98bd0b32-6327-4d73-a906-f44b9016da8a",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -1324,12 +1266,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/images/9947ca27-3126-4df6-ab7b-65cf159b0a27",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/images/9947ca27-3126-4df6-ab7b-65cf159b0a27",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -1347,12 +1287,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/images/9947ca27-3126-4df6-ab7b-65cf159b0a",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/images/9947ca27-3126-4df6-ab7b-65cf159b0a",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -1378,12 +1316,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46e/images",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46e/images",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -1401,12 +1337,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46z/images",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/a3b80e40-1f6b-434a-ace9-89b7da8fb46z/images",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -1424,12 +1358,10 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8080/api/v1/ads/9947ca27-3126-4df6-ab7b-65cf159b0a27/images",
-									"protocol": "http",
+									"raw": "{{baseurl}}/api/v1/ads/9947ca27-3126-4df6-ab7b-65cf159b0a27/images",
 									"host": [
-										"localhost"
+										"{{baseurl}}"
 									],
-									"port": "8080",
 									"path": [
 										"api",
 										"v1",
@@ -1444,6 +1376,40 @@
 					]
 				}
 			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseurl",
+			"value": "http://185.104.249.205",
+			"type": "string"
+		},
+		{
+			"key": "local",
+			"value": "http://localhost:8080",
+			"type": "string"
 		}
 	]
 }
