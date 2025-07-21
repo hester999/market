@@ -132,7 +132,6 @@ func (i *ImageHandler) AddImage(w http.ResponseWriter, r *http.Request) {
 // @Param        id   path      string  true  "ID объявления"
 // @Success      200  {array}   dto.ResponseDTO                 "Список изображений"
 // @Failure      400  {object}  dto.Err400BadRequest            "Некорректный ID"
-// @Failure      401  {object}  dto.Err401Unauthorized          "Пользователь не авторизован"
 // @Failure      404  {object}  dto.ErrImagesNotFoundExample           "Изображения не найдены или объявление не существует"
 // @Failure      500  {object}  dto.Err500Internal              "Внутренняя ошибка сервера"
 // @Router       /api/v1/ads/{id}/images [get]
@@ -199,7 +198,6 @@ func (i *ImageHandler) GetImages(w http.ResponseWriter, r *http.Request) {
 // @Param        id   path      string  true  "ID изображения"
 // @Success      200  {object}  dto.ResponseDTO                 "Данные изображения"
 // @Failure      400  {object}  dto.Err400BadRequest            "ID изображения не указан"
-// @Failure      401  {object}  dto.Err401Unauthorized          "Пользователь не авторизован"
 // @Failure      404  {object}  dto.Err404AdNotFound            "Изображение не найдено"
 // @Failure      500  {object}  dto.Err500Internal              "Внутренняя ошибка сервера"
 // @Router       /api/v1/ads/images/{id} [get]
