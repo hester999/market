@@ -1,122 +1,117 @@
+
 func (c *Client) ProcessElementsFromBottomMultiParent(tx *sqlx.Tx, elementIDs []int64) error {
     traceID := "9caeef90-058f-4667-b117-d25af63fc4cb"
     
-    // 1. Получаем ВСЕ элементы из всех поддеревьев
-    allElements := make([]int64, 0)
-    elementMap := make(map[int64]bool) // Для отслеживания уникальности
+    // 1. Получаем ВСЕ уникальные элементы из всех поддеревьев
+    allElementsSet := make(map[int64]bool)
     
     for _, elementID := range elementIDs {
-        // Рекурсивно получаем все элементы поддерева
-        subtree, err := c.getAllElementsInSubtreeMultiParent(tx, elementID)
+        subtree, err := c.getAllElementsInSubtree(tx, elementID)
         if err != nil {
             return fmt.Errorf("failed to get subtree for element %d: %w", elementID, err)
         }
         
         for _, elemID := range subtree {
-            if !elementMap[elemID] {
-                elementMap[elemID] = true
-                allElements = append(allElements, elemID)
-            }
+            allElementsSet[elemID] = true
         }
     }
     
-    if len(allElements) == 0 {
+    if len(allElementsSet) == 0 {
         return nil
     }
     
-    // 2. Получаем информацию о рангах и типах всех элементов
+    // Конвертируем set в slice
+    allElements := make([]int64, 0, len(allElementsSet))
+    for elemID := range allElementsSet {
+        allElements = append(allElements, elemID)
+    }
+    
+    // 2. Получаем информацию о элементах
     elementsInfo, err := c.getElementsInfo(tx, allElements)
     if err != nil {
         return err
     }
     
-    // 3. Группируем элементы по рангу
-    elementsByRank := make(map[int][]int64)
-    maxRank := 0
+    // 3. Сортируем элементы по рангу (от меньшего к большему)
+    sort.Slice(elementsInfo, func(i, j int) bool {
+        return elementsInfo[i].Rank < elementsInfo[j].Rank
+    })
     
-    for _, info := range elementsInfo {
-        rank := int(info.Rank)
-        elementsByRank[rank] = append(elementsByRank[rank], info.ID)
-        
-        if rank > maxRank {
-            maxRank = rank
-        }
-    }
+    // 4. Обрабатываем элементы в порядке возрастания ранга
+    // Для элементов с одинаковым рангом может потребоваться несколько проходов
+    processedCount := 0
+    maxIterations := len(elementsInfo) * 2 // защита от бесконечного цикла
     
-    // 4. Обрабатываем от ранга 0 до maxRank (от листьев к корню)
-    for rank := 0; rank <= maxRank; rank++ {
-        if elements, ok := elementsByRank[rank]; ok {
-            for _, elementID := range elements {
-                // Находим тип элемента
-                var elementType string
-                for _, info := range elementsInfo {
-                    if info.ID == elementID {
-                        elementType = info.Type
-                        break
-                    }
+    for iteration := 0; iteration < maxIterations && processedCount < len(elementsInfo); iteration++ {
+        for i := range elementsInfo {
+            if elementsInfo[i].Processed {
+                continue
+            }
+            
+            // Проверяем, можно ли обработать этот элемент
+            canProcess := true
+            
+            // Если это правило, проверяем что все его дети уже обработаны
+            if elementsInfo[i].Type == "rule" {
+                childrenProcessed, err := c.areAllChildrenProcessed(tx, elementsInfo[i].ID, elementsInfo)
+                if err != nil {
+                    return err
                 }
-                
-                // Проверяем, все ли дети уже обработаны (только для правил)
-                if elementType == "rule" {
-                    allChildrenProcessed, err := c.checkAllChildrenProcessed(tx, elementID, elementsInfo, rank, maxRank)
-                    if err != nil {
-                        return err
-                    }
-                    if !allChildrenProcessed {
-                        // Пропускаем этот элемент сейчас, обработаем позже
-                        continue
-                    }
-                }
-                
+                canProcess = childrenProcessed
+            }
+            
+            if canProcess {
                 // Удаляем из trace
                 deleteQuery := `CALL trace.delete_elements_from_trace_force($1, $2)`
-                _, err := tx.Exec(deleteQuery, elementID, traceID)
+                _, err := tx.Exec(deleteQuery, elementsInfo[i].ID, traceID)
                 if err != nil {
-                    return fmt.Errorf("failed to delete element %d: %w", elementID, err)
+                    return fmt.Errorf("failed to delete element %d: %w", elementsInfo[i].ID, err)
                 }
                 
                 // Вставляем в trace
                 copyQuery := `CALL element.copy_element_to_trace($1, $2, $3)`
-                _, err = tx.Exec(copyQuery, elementID, "element", traceID)
+                _, err = tx.Exec(copyQuery, elementsInfo[i].ID, "element", traceID)
                 if err != nil {
-                    return fmt.Errorf("failed to copy element %d: %w", elementID, err)
+                    return fmt.Errorf("failed to copy element %d: %w", elementsInfo[i].ID, err)
                 }
                 
-                // Помечаем как обработанный
-                for i := range elementsInfo {
-                    if elementsInfo[i].ID == elementID {
-                        elementsInfo[i].Processed = true
-                        break
-                    }
-                }
+                elementsInfo[i].Processed = true
+                processedCount++
             }
         }
+    }
+    
+    if processedCount < len(elementsInfo) {
+        return fmt.Errorf("failed to process all elements, possibly due to circular dependency")
     }
     
     return nil
 }
 
-// Получаем все элементы в поддереве с учетом множественных родителей
-func (c *Client) getAllElementsInSubtreeMultiParent(tx *sqlx.Tx, startElementID int64) ([]int64, error) {
+func (c *Client) getAllElementsInSubtree(tx *sqlx.Tx, startElementID int64) ([]int64, error) {
     var allElements []int64
     
     q := `
-    WITH RECURSIVE element_tree AS (
-        -- Начинаем с корневого элемента
-        SELECT id, rank
+    WITH RECURSIVE element_tree(id, path, cycle) AS (
+        SELECT 
+            id, 
+            ARRAY[id],
+            false
         FROM element.list 
         WHERE id = $1
         
         UNION ALL
         
-        -- Добавляем детей (множественные родители учитываются)
-        SELECT DISTINCT l.id, l.rank
+        SELECT 
+            l.id,
+            et.path || l.id,
+            l.id = ANY(et.path)
         FROM element.list l
         JOIN element.rule_link rl ON l.id = rl.element_id
         JOIN element_tree et ON et.id = rl.id_rule
-        WHERE l.id NOT IN (SELECT id FROM element_tree)
+        WHERE NOT et.cycle
     )
-    SELECT id FROM element_tree`
+    SELECT id FROM element_tree WHERE NOT cycle`
     
     err := tx.Select(&allElements, q, startElementID)
     if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -133,7 +128,6 @@ type ElementInfo struct {
     Processed bool   `db:"-"`
 }
 
-// Получаем информацию о всех элементах
 func (c *Client) getElementsInfo(tx *sqlx.Tx, elementIDs []int64) ([]ElementInfo, error) {
     if len(elementIDs) == 0 {
         return []ElementInfo{}, nil
@@ -158,8 +152,7 @@ func (c *Client) getElementsInfo(tx *sqlx.Tx, elementIDs []int64) ([]ElementInfo
     return elements, nil
 }
 
-// Проверяем, все ли дети элемента уже обработаны
-func (c *Client) checkAllChildrenProcessed(tx *sqlx.Tx, elementID int64, elementsInfo []ElementInfo, currentRank, maxRank int) (bool, error) {
+func (c *Client) areAllChildrenProcessed(tx *sqlx.Tx, elementID int64, elementsInfo []ElementInfo) (bool, error) {
     // Получаем всех детей элемента
     var children []int64
     q := `SELECT element_id FROM element.rule_link WHERE id_rule = $1`
@@ -168,33 +161,21 @@ func (c *Client) checkAllChildrenProcessed(tx *sqlx.Tx, elementID int64, element
         return false, err
     }
     
-    // Если детей нет, можно обрабатывать
     if len(children) == 0 {
         return true, nil
     }
     
-    // Проверяем каждого ребенка
+    // Проверяем, все ли дети обработаны
     for _, childID := range children {
-        // Ищем информацию о ребенке
         childProcessed := false
-        childRank := -1
-        
         for _, info := range elementsInfo {
-            if info.ID == childID {
-                childProcessed = info.Processed
-                childRank = int(info.Rank)
+            if info.ID == childID && info.Processed {
+                childProcessed = true
                 break
             }
         }
-        
-        // Если ребенок не найден или не обработан - нельзя обрабатывать родителя
-        if childRank == -1 || !childProcessed {
+        if !childProcessed {
             return false, nil
-        }
-        
-        // Дополнительная проверка: ранг ребенка должен быть больше ранга родителя
-        if childRank <= currentRank {
-            return false, fmt.Errorf("invalid hierarchy: child rank %d <= parent rank %d", childRank, currentRank)
         }
     }
     
