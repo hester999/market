@@ -1,146 +1,202 @@
-WITH RECURSIVE up AS (
-  -- старт: изменившийся элемент
-  SELECT
-    NULL::bigint AS parent_rule_id,
-    :changed_element_id::bigint AS node_id
-  UNION ALL
-  -- поднимаемся: находим rule, которые указывают на текущий node_id
-  SELECT
-    rl.rule_id AS parent_rule_id,
-    rl.rule_id AS node_id
-  FROM base.rule_link rl
-  JOIN up ON rl.element_id = up.node_id
-),
-affected_rules AS (
-  -- все правила, которые встретились как предки
-  SELECT DISTINCT parent_rule_id AS rule_id
-  FROM up
-  WHERE parent_rule_id IS NOT NULL
-),
-roots AS (
-  -- корни = те affected rule, у которых нет родителя в base (их никто не использует как child)
-  SELECT ar.rule_id
-  FROM affected_rules ar
-  LEFT JOIN base.rule_link back ON back.element_id = ar.rule_id
-  WHERE back.rule_id IS NULL
-)
-SELECT * FROM roots;
+func (c *Client) ProcessElementsFromBottomMultiParent(tx *sqlx.Tx, elementIDs []int64) error {
+    traceID := "9caeef90-058f-4667-b117-d25af63fc4cb"
+    
+    // 1. Получаем ВСЕ элементы из всех поддеревьев
+    allElements := make([]int64, 0)
+    elementMap := make(map[int64]bool) // Для отслеживания уникальности
+    
+    for _, elementID := range elementIDs {
+        // Рекурсивно получаем все элементы поддерева
+        subtree, err := c.getAllElementsInSubtreeMultiParent(tx, elementID)
+        if err != nil {
+            return fmt.Errorf("failed to get subtree for element %d: %w", elementID, err)
+        }
+        
+        for _, elemID := range subtree {
+            if !elementMap[elemID] {
+                elementMap[elemID] = true
+                allElements = append(allElements, elemID)
+            }
+        }
+    }
+    
+    if len(allElements) == 0 {
+        return nil
+    }
+    
+    // 2. Получаем информацию о рангах и типах всех элементов
+    elementsInfo, err := c.getElementsInfo(tx, allElements)
+    if err != nil {
+        return err
+    }
+    
+    // 3. Группируем элементы по рангу
+    elementsByRank := make(map[int][]int64)
+    maxRank := 0
+    
+    for _, info := range elementsInfo {
+        rank := int(info.Rank)
+        elementsByRank[rank] = append(elementsByRank[rank], info.ID)
+        
+        if rank > maxRank {
+            maxRank = rank
+        }
+    }
+    
+    // 4. Обрабатываем от ранга 0 до maxRank (от листьев к корню)
+    for rank := 0; rank <= maxRank; rank++ {
+        if elements, ok := elementsByRank[rank]; ok {
+            for _, elementID := range elements {
+                // Находим тип элемента
+                var elementType string
+                for _, info := range elementsInfo {
+                    if info.ID == elementID {
+                        elementType = info.Type
+                        break
+                    }
+                }
+                
+                // Проверяем, все ли дети уже обработаны (только для правил)
+                if elementType == "rule" {
+                    allChildrenProcessed, err := c.checkAllChildrenProcessed(tx, elementID, elementsInfo, rank, maxRank)
+                    if err != nil {
+                        return err
+                    }
+                    if !allChildrenProcessed {
+                        // Пропускаем этот элемент сейчас, обработаем позже
+                        continue
+                    }
+                }
+                
+                // Удаляем из trace
+                deleteQuery := `CALL trace.delete_elements_from_trace_force($1, $2)`
+                _, err := tx.Exec(deleteQuery, elementID, traceID)
+                if err != nil {
+                    return fmt.Errorf("failed to delete element %d: %w", elementID, err)
+                }
+                
+                // Вставляем в trace
+                copyQuery := `CALL element.copy_element_to_trace($1, $2, $3)`
+                _, err = tx.Exec(copyQuery, elementID, "element", traceID)
+                if err != nil {
+                    return fmt.Errorf("failed to copy element %d: %w", elementID, err)
+                }
+                
+                // Помечаем как обработанный
+                for i := range elementsInfo {
+                    if elementsInfo[i].ID == elementID {
+                        elementsInfo[i].Processed = true
+                        break
+                    }
+                }
+            }
+        }
+    }
+    
+    return nil
+}
 
+// Получаем все элементы в поддереве с учетом множественных родителей
+func (c *Client) getAllElementsInSubtreeMultiParent(tx *sqlx.Tx, startElementID int64) ([]int64, error) {
+    var allElements []int64
+    
+    q := `
+    WITH RECURSIVE element_tree AS (
+        -- Начинаем с корневого элемента
+        SELECT id, rank
+        FROM element.list 
+        WHERE id = $1
+        
+        UNION ALL
+        
+        -- Добавляем детей (множественные родители учитываются)
+        SELECT DISTINCT l.id, l.rank
+        FROM element.list l
+        JOIN element.rule_link rl ON l.id = rl.element_id
+        JOIN element_tree et ON et.id = rl.id_rule
+        WHERE l.id NOT IN (SELECT id FROM element_tree)
+    )
+    SELECT id FROM element_tree`
+    
+    err := tx.Select(&allElements, q, startElementID)
+    if err != nil && !errors.Is(err, sql.ErrNoRows) {
+        return nil, err
+    }
+    
+    return allElements, nil
+}
 
+type ElementInfo struct {
+    ID        int64  `db:"id"`
+    Type      string `db:"type"`
+    Rank      int64  `db:"rank"`
+    Processed bool   `db:"-"`
+}
 
-WITH RECURSIVE down AS (
-  -- стартуем от корней
-  SELECT
-    r.rule_id AS root_rule_id,
-    rl.rule_id AS rule_id,
-    rl.element_id AS element_id
-  FROM roots r
-  JOIN base.rule_link rl ON rl.rule_id = r.rule_id
+// Получаем информацию о всех элементах
+func (c *Client) getElementsInfo(tx *sqlx.Tx, elementIDs []int64) ([]ElementInfo, error) {
+    if len(elementIDs) == 0 {
+        return []ElementInfo{}, nil
+    }
+    
+    var elements []ElementInfo
+    query, args, err := sqlx.In(`
+        SELECT id, type, rank 
+        FROM element.list 
+        WHERE id IN (?)
+        ORDER BY rank ASC`, elementIDs)
+    if err != nil {
+        return nil, err
+    }
+    
+    query = tx.Rebind(query)
+    err = tx.Select(&elements, query, args...)
+    if err != nil {
+        return nil, err
+    }
+    
+    return elements, nil
+}
 
-  UNION ALL
-
-  -- если element_id является rule, то раскрываем его детей
-  SELECT
-    d.root_rule_id,
-    rl.rule_id,
-    rl.element_id
-  FROM down d
-  JOIN base.rule_link rl ON rl.rule_id = d.element_id
-)
-SELECT DISTINCT root_rule_id, rule_id, element_id
-FROM down;
-
-
-
-BEGIN;
-
--- 0) вычислить roots + desired_edges (лучше в TEMP, чтобы не считать 10 раз)
-CREATE TEMP TABLE tmp_roots AS
-WITH RECURSIVE up AS (
-  SELECT NULL::bigint AS parent_rule_id, :changed_element_id::bigint AS node_id
-  UNION ALL
-  SELECT rl.rule_id, rl.rule_id
-  FROM base.rule_link rl
-  JOIN up ON rl.element_id = up.node_id
-),
-affected_rules AS (
-  SELECT DISTINCT parent_rule_id AS rule_id
-  FROM up
-  WHERE parent_rule_id IS NOT NULL
-)
-SELECT ar.rule_id
-FROM affected_rules ar
-LEFT JOIN base.rule_link back ON back.element_id = ar.rule_id
-WHERE back.rule_id IS NULL;
-
-CREATE TEMP TABLE tmp_edges AS
-WITH RECURSIVE down AS (
-  SELECT r.rule_id AS root_rule_id, rl.rule_id, rl.element_id
-  FROM tmp_roots r
-  JOIN base.rule_link rl ON rl.rule_id = r.rule_id
-  UNION ALL
-  SELECT d.root_rule_id, rl.rule_id, rl.element_id
-  FROM down d
-  JOIN base.rule_link rl ON rl.rule_id = d.element_id
-)
-SELECT DISTINCT root_rule_id, rule_id, element_id
-FROM down;
-
--- 1) обеспечить наличие всех нужных элементов/узлов в work.list
--- (если work.list хранит сами элементы)
-INSERT INTO work.list (id, name, ...)
-SELECT b.id, b.name, ...
-FROM base.list b
-WHERE b.id IN (
-  SELECT element_id FROM tmp_edges
-  UNION
-  SELECT rule_id FROM tmp_edges  -- если rule тоже лежит в list
-  UNION
-  SELECT root_rule_id FROM tmp_edges
-)
-ON CONFLICT (id) DO UPDATE
-SET name = EXCLUDED.name, ...;   -- тут допустим update разрешён
-
--- 2) вставить/обновить рёбра
-INSERT INTO work.rule_link (id_rule, id_element)
-SELECT rule_id, element_id
-FROM tmp_edges
-ON CONFLICT (id_rule, id_element) DO NOTHING;
-
--- 3) вставить/обновить зависимые таблицы из base → work
--- пример для rule_value_link (если завязан на (id_rule, id_element))
-INSERT INTO work.rule_value_link (id_rule, id_element, name, ...)
-SELECT b.id_rule, b.id_element, b.name, ...
-FROM base.rule_value_link b
-JOIN tmp_edges e
-  ON e.rule_id = b.id_rule AND e.element_id = b.id_element
-ON CONFLICT (...) DO UPDATE SET ...;
-
--- аналогично ctx_value_link / attr_value_link:
--- их лучше ограничивать не “по element_id”, а по нужному набору element_id из tmp_edges
-
--- 4) ЧИСТКА: удалить из work то, чего больше нет в base для этих roots
--- 4.1) сначала зависимые таблицы
-DELETE FROM work.rule_value_link w
-USING tmp_edges e
-WHERE w.id_rule = e.rule_id
-  AND w.id_element = e.element_id
-  AND NOT EXISTS (
-    SELECT 1
-    FROM base.rule_value_link b
-    WHERE b.id_rule = w.id_rule AND b.id_element = w.id_element
-      AND b.name = w.name  -- или по PK/UK этой таблицы
-  );
-
--- 4.2) затем лишние рёбра (только в зоне этих roots!)
-DELETE FROM work.rule_link w
-USING tmp_edges e
-WHERE w.id_rule = e.rule_id
-  AND w.id_element = e.element_id
-  AND NOT EXISTS (
-    SELECT 1
-    FROM base.rule_link b
-    WHERE b.id_rule = w.id_rule AND b.id_element = w.id_element
-  );
-
-COMMIT;
+// Проверяем, все ли дети элемента уже обработаны
+func (c *Client) checkAllChildrenProcessed(tx *sqlx.Tx, elementID int64, elementsInfo []ElementInfo, currentRank, maxRank int) (bool, error) {
+    // Получаем всех детей элемента
+    var children []int64
+    q := `SELECT element_id FROM element.rule_link WHERE id_rule = $1`
+    err := tx.Select(&children, q, elementID)
+    if err != nil && !errors.Is(err, sql.ErrNoRows) {
+        return false, err
+    }
+    
+    // Если детей нет, можно обрабатывать
+    if len(children) == 0 {
+        return true, nil
+    }
+    
+    // Проверяем каждого ребенка
+    for _, childID := range children {
+        // Ищем информацию о ребенке
+        childProcessed := false
+        childRank := -1
+        
+        for _, info := range elementsInfo {
+            if info.ID == childID {
+                childProcessed = info.Processed
+                childRank = int(info.Rank)
+                break
+            }
+        }
+        
+        // Если ребенок не найден или не обработан - нельзя обрабатывать родителя
+        if childRank == -1 || !childProcessed {
+            return false, nil
+        }
+        
+        // Дополнительная проверка: ранг ребенка должен быть больше ранга родителя
+        if childRank <= currentRank {
+            return false, fmt.Errorf("invalid hierarchy: child rank %d <= parent rank %d", childRank, currentRank)
+        }
+    }
+    
+    return true, nil
+}
