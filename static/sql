@@ -1,0 +1,146 @@
+WITH RECURSIVE up AS (
+  -- старт: изменившийся элемент
+  SELECT
+    NULL::bigint AS parent_rule_id,
+    :changed_element_id::bigint AS node_id
+  UNION ALL
+  -- поднимаемся: находим rule, которые указывают на текущий node_id
+  SELECT
+    rl.rule_id AS parent_rule_id,
+    rl.rule_id AS node_id
+  FROM base.rule_link rl
+  JOIN up ON rl.element_id = up.node_id
+),
+affected_rules AS (
+  -- все правила, которые встретились как предки
+  SELECT DISTINCT parent_rule_id AS rule_id
+  FROM up
+  WHERE parent_rule_id IS NOT NULL
+),
+roots AS (
+  -- корни = те affected rule, у которых нет родителя в base (их никто не использует как child)
+  SELECT ar.rule_id
+  FROM affected_rules ar
+  LEFT JOIN base.rule_link back ON back.element_id = ar.rule_id
+  WHERE back.rule_id IS NULL
+)
+SELECT * FROM roots;
+
+
+
+WITH RECURSIVE down AS (
+  -- стартуем от корней
+  SELECT
+    r.rule_id AS root_rule_id,
+    rl.rule_id AS rule_id,
+    rl.element_id AS element_id
+  FROM roots r
+  JOIN base.rule_link rl ON rl.rule_id = r.rule_id
+
+  UNION ALL
+
+  -- если element_id является rule, то раскрываем его детей
+  SELECT
+    d.root_rule_id,
+    rl.rule_id,
+    rl.element_id
+  FROM down d
+  JOIN base.rule_link rl ON rl.rule_id = d.element_id
+)
+SELECT DISTINCT root_rule_id, rule_id, element_id
+FROM down;
+
+
+
+BEGIN;
+
+-- 0) вычислить roots + desired_edges (лучше в TEMP, чтобы не считать 10 раз)
+CREATE TEMP TABLE tmp_roots AS
+WITH RECURSIVE up AS (
+  SELECT NULL::bigint AS parent_rule_id, :changed_element_id::bigint AS node_id
+  UNION ALL
+  SELECT rl.rule_id, rl.rule_id
+  FROM base.rule_link rl
+  JOIN up ON rl.element_id = up.node_id
+),
+affected_rules AS (
+  SELECT DISTINCT parent_rule_id AS rule_id
+  FROM up
+  WHERE parent_rule_id IS NOT NULL
+)
+SELECT ar.rule_id
+FROM affected_rules ar
+LEFT JOIN base.rule_link back ON back.element_id = ar.rule_id
+WHERE back.rule_id IS NULL;
+
+CREATE TEMP TABLE tmp_edges AS
+WITH RECURSIVE down AS (
+  SELECT r.rule_id AS root_rule_id, rl.rule_id, rl.element_id
+  FROM tmp_roots r
+  JOIN base.rule_link rl ON rl.rule_id = r.rule_id
+  UNION ALL
+  SELECT d.root_rule_id, rl.rule_id, rl.element_id
+  FROM down d
+  JOIN base.rule_link rl ON rl.rule_id = d.element_id
+)
+SELECT DISTINCT root_rule_id, rule_id, element_id
+FROM down;
+
+-- 1) обеспечить наличие всех нужных элементов/узлов в work.list
+-- (если work.list хранит сами элементы)
+INSERT INTO work.list (id, name, ...)
+SELECT b.id, b.name, ...
+FROM base.list b
+WHERE b.id IN (
+  SELECT element_id FROM tmp_edges
+  UNION
+  SELECT rule_id FROM tmp_edges  -- если rule тоже лежит в list
+  UNION
+  SELECT root_rule_id FROM tmp_edges
+)
+ON CONFLICT (id) DO UPDATE
+SET name = EXCLUDED.name, ...;   -- тут допустим update разрешён
+
+-- 2) вставить/обновить рёбра
+INSERT INTO work.rule_link (id_rule, id_element)
+SELECT rule_id, element_id
+FROM tmp_edges
+ON CONFLICT (id_rule, id_element) DO NOTHING;
+
+-- 3) вставить/обновить зависимые таблицы из base → work
+-- пример для rule_value_link (если завязан на (id_rule, id_element))
+INSERT INTO work.rule_value_link (id_rule, id_element, name, ...)
+SELECT b.id_rule, b.id_element, b.name, ...
+FROM base.rule_value_link b
+JOIN tmp_edges e
+  ON e.rule_id = b.id_rule AND e.element_id = b.id_element
+ON CONFLICT (...) DO UPDATE SET ...;
+
+-- аналогично ctx_value_link / attr_value_link:
+-- их лучше ограничивать не “по element_id”, а по нужному набору element_id из tmp_edges
+
+-- 4) ЧИСТКА: удалить из work то, чего больше нет в base для этих roots
+-- 4.1) сначала зависимые таблицы
+DELETE FROM work.rule_value_link w
+USING tmp_edges e
+WHERE w.id_rule = e.rule_id
+  AND w.id_element = e.element_id
+  AND NOT EXISTS (
+    SELECT 1
+    FROM base.rule_value_link b
+    WHERE b.id_rule = w.id_rule AND b.id_element = w.id_element
+      AND b.name = w.name  -- или по PK/UK этой таблицы
+  );
+
+-- 4.2) затем лишние рёбра (только в зоне этих roots!)
+DELETE FROM work.rule_link w
+USING tmp_edges e
+WHERE w.id_rule = e.rule_id
+  AND w.id_element = e.element_id
+  AND NOT EXISTS (
+    SELECT 1
+    FROM base.rule_link b
+    WHERE b.id_rule = w.id_rule AND b.id_element = w.id_element
+  );
+
+COMMIT;
