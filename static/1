@@ -1,0 +1,104 @@
+CREATE OR REPLACE PROCEDURE trace.rebuild_from_inputs(input_ids bigint[])
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -------------------------------------------------------------------
+  -- 1) Собираем все затронутые правила (предки) для любых входных id
+  -------------------------------------------------------------------
+  CREATE TEMP TABLE tmp_rules(rule_id bigint PRIMARY KEY) ON COMMIT DROP;
+
+  INSERT INTO tmp_rules(rule_id)
+  WITH RECURSIVE up(node_id) AS (
+    SELECT unnest(input_ids)
+    UNION ALL
+    SELECT rl.id_rule
+    FROM element.rule_link rl
+    JOIN up ON rl.id_element = up.node_id
+  )
+  SELECT DISTINCT u.node_id
+  FROM up u
+  -- правило = то, что существует в rule_value_link (как у тебя FK в rule_link.id_rule)
+  JOIN element.rule_value_link rvl ON rvl.id = u.node_id;
+
+  -- если ничего не нашли — выходим
+  IF NOT EXISTS (SELECT 1 FROM tmp_rules) THEN
+    RETURN;
+  END IF;
+
+  -------------------------------------------------------------------
+  -- 2) Собираем все нужные ребра вниз от этих правил (поддерево/подграф)
+  -------------------------------------------------------------------
+  CREATE TEMP TABLE tmp_edges(
+    id_rule bigint NOT NULL,
+    id_element bigint NOT NULL,
+    log_inv boolean NOT NULL,
+    PRIMARY KEY (id_rule, id_element)
+  ) ON COMMIT DROP;
+
+  INSERT INTO tmp_edges(id_rule, id_element, log_inv)
+  WITH RECURSIVE down(id_rule, id_element, log_inv) AS (
+    SELECT rl.id_rule, rl.id_element, rl.log_inv
+    FROM element.rule_link rl
+    JOIN tmp_rules tr ON tr.rule_id = rl.id_rule
+
+    UNION ALL
+
+    -- если child является правилом (есть в rule_value_link), раскрываем его детей
+    SELECT rl2.id_rule, rl2.id_element, rl2.log_inv
+    FROM down d
+    JOIN element.rule_link rl2 ON rl2.id_rule = d.id_element
+    JOIN element.rule_value_link rvl2 ON rvl2.id = d.id_element
+  )
+  SELECT DISTINCT id_rule, id_element, log_inv
+  FROM down;
+
+  -------------------------------------------------------------------
+  -- 3) Upsert всех нужных узлов list по id (чтобы FK на id_element не падал)
+  --    Важно: вставляем и id_element, и id_rule (rule может быть element)
+  -------------------------------------------------------------------
+  INSERT INTO trace.list
+  SELECT l.*
+  FROM element.list l
+  WHERE l.id IN (
+    SELECT id_element FROM tmp_edges
+    UNION
+    SELECT id_rule FROM tmp_edges
+  )
+  ON CONFLICT ON CONSTRAINT list_pkey
+  DO UPDATE SET
+    rank        = EXCLUDED.rank,
+    deleted     = EXCLUDED.deleted,
+    date_update = EXCLUDED.date_update;
+
+  -------------------------------------------------------------------
+  -- 4) Upsert правил rule_value_link по id (id синхронны)
+  --    НИКАКОГО on conflict(tag) тут быть не должно, если id синхронны.
+  -------------------------------------------------------------------
+  INSERT INTO trace.rule_value_link
+  SELECT r.*
+  FROM element.rule_value_link r
+  WHERE r.id IN (SELECT rule_id FROM tmp_rules)
+  ON CONFLICT ON CONSTRAINT rule_value_link_pkey
+  DO UPDATE SET
+    id_rule_desc = EXCLUDED.id_rule_desc,
+    id_class     = EXCLUDED.id_class,
+    tag          = EXCLUDED.tag;
+
+  -------------------------------------------------------------------
+  -- 5) Пересобираем связи ТОЛЬКО для затронутых родителей (id_rule)
+  --    Это то, что устраняет "отвязку" shared-детей.
+  -------------------------------------------------------------------
+  -- 5.1 удалить старые связи у этих родителей
+  DELETE FROM trace.rule_link rl
+  USING tmp_rules tr
+  WHERE rl.id_rule = tr.rule_id;
+
+  -- 5.2 вставить актуальные связи из base-подграфа
+  INSERT INTO trace.rule_link(id_rule, id_element, log_inv)
+  SELECT id_rule, id_element, log_inv
+  FROM tmp_edges
+  ON CONFLICT (id_rule, id_element) DO UPDATE
+  SET log_inv = EXCLUDED.log_inv;
+
+END;
+$$;
